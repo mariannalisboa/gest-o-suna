@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — SUNA Digital</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#EDE8DC;--bg2:#E5DFCF;--bg3:#DAD3C0;
+  --ink:#0F0E0C;--ink2:#2A2720;--ink3:#5C5648;
+  --sand:#B8A882;--sand-light:#D4CBB4;--rule:#C8BEA8;
+  --red:#B84A2E;--amber:#C07A2A;--green:#3A6B4A;--blue:#2A4B6B;
+  --tag-bg:#D8D0BC;
+  --sidebar:220px;
+  --mono:'DM Mono',monospace;--serif:'Barlow Condensed',sans-serif;--sans:'Barlow',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased;display:flex;min-height:100vh}
+#sidebar{width:var(--sidebar);min-width:var(--sidebar);background:#1A1714;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:200;border-right:1px solid #333;overflow-y:auto}
+.sb-brand{padding:28px 24px 20px;border-bottom:1px solid #2a2724}
+.sb-brand-name{font-family:var(--serif);font-size:22px;font-weight:900;text-transform:uppercase;color:#fff;letter-spacing:.06em}
+.sb-brand-sub{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--sand);margin-top:4px}
+.sb-nav{flex:1;padding:16px 0}
+.sb-nav-label{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#555;padding:12px 24px 6px}
+.sb-link{display:flex;align-items:center;gap:10px;padding:10px 24px;color:rgba(255,255,255,.5);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none;user-select:none}
+.sb-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.sb-link.active{color:#fff;background:rgba(255,255,255,.07);border-left-color:var(--sand)}
+.sb-link .sb-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700}
+.sb-badge.amber{background:var(--amber)}
+.sb-footer{padding:16px 24px;border-top:1px solid #2a2724;font-family:var(--mono);font-size:9px;color:#444;letter-spacing:.1em;text-transform:uppercase}
+#main{margin-left:var(--sidebar);flex:1;min-height:100vh}
+.tab-panel{display:none;padding:48px 52px;min-height:100vh}
+.tab-panel.active{display:block}
+.panel-header{margin-bottom:40px;padding-bottom:24px;border-bottom:2px solid var(--rule)}
+.panel-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);margin-bottom:8px}
+.panel-title{font-family:var(--serif);font-size:clamp(36px,4vw,56px);font-weight:900;text-transform:uppercase;color:var(--ink);line-height:1;letter-spacing:-.01em}
+.panel-title span{color:var(--sand)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{background:var(--bg);border:1px solid var(--rule);border-radius:2px;padding:24px}
+.card-dark{background:var(--ink);border:none;color:#fff;border-radius:2px;padding:24px}
+.card-accent{background:var(--bg3);border:1px solid var(--sand-light);border-radius:2px;padding:24px}
+.card-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--sand);margin-bottom:8px;display:block}
+.card h3{font-family:var(--serif);font-size:20px;font-weight:800;text-transform:uppercase;color:var(--ink);margin-bottom:10px;line-height:1.1}
+.card-dark h3{color:#fff}
+.card p,.card li{font-size:13.5px;color:var(--ink2);line-height:1.6}
+.card-dark p{color:rgba(255,255,255,.65)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--rule);border-radius:2px;overflow:hidden;margin-bottom:32px}
+.kpi-item{padding:20px 22px;border-right:1px solid var(--rule);background:var(--bg)}
+.kpi-item:last-child{border-right:none}
+.kpi-item:nth-child(even){background:var(--bg2)}
+.kpi-label{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.kpi-value{font-family:var(--serif);font-size:34px;font-weight:900;text-transform:uppercase;color:var(--ink);line-height:1;letter-spacing:-.01em}
+.kpi-sub{font-size:11px;color:var(--ink3);margin-top:4px}
+.alert{padding:16px 20px;border-radius:0 2px 2px 0;border:1px solid;border-left:4px solid;margin-bottom:10px}
+.alert-red{background:#FBF0ED;border-color:#E8C4BC;border-left-color:var(--red)}
+.alert-amber{background:#FBF5EB;border-color:#E8D5B0;border-left-color:var(--amber)}
+.alert-green{background:#EBF3EE;border-color:#B8D4BF;border-left-color:var(--green)}
+.alert-title{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.alert-red .alert-title{color:var(--red)}
+.alert-amber .alert-title{color:var(--amber)}
+.alert-green .alert-title{color:var(--green)}
+.alert p{font-size:13px;color:var(--ink2);line-height:1.5}
+.tag{display:inline-block;padding:3px 10px;border-radius:2px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:var(--tag-bg);color:var(--ink2);margin-right:6px;margin-bottom:4px}
+.tag-red{background:#FBEBE6;color:var(--red)}
+.tag-amber{background:#FBF2E6;color:var(--amber)}
+.tag-green{background:#E6F1EA;color:var(--green)}
+.tag-blue{background:#E6EDF5;color:var(--blue)}
+.table-wrap{overflow-x:auto;margin:16px 0}
+.table-search{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.table-search input{background:var(--bg);border:1px solid var(--rule);border-radius:2px;padding:7px 12px;font-family:var(--mono);font-size:11px;color:var(--ink);letter-spacing:.06em;outline:none;min-width:200px;transition:border-color .2s}
+.table-search input:focus{border-color:var(--sand)}
+.table-search label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--bg)}
+thead tr{background:var(--ink);color:#fff}
+thead th{padding:10px 14px;text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--rule);transition:background .15s}
+tbody tr:nth-child(even){background:var(--bg2)}
+tbody tr:hover{background:var(--bg3)}
+tbody tr.hidden-row{display:none}
+tbody td{padding:10px 14px;color:var(--ink2);vertical-align:top;line-height:1.5}
+tbody td strong{color:var(--ink);font-weight:600}
+.flow{display:flex;flex-direction:column;gap:0;margin:20px 0;position:relative}
+.flow::before{content:'';position:absolute;left:19px;top:20px;bottom:20px;width:1px;background:var(--rule)}
+.flow-step{display:flex;gap:18px;align-items:flex-start;padding:14px 0;position:relative;z-index:1;cursor:pointer;transition:opacity .2s}
+.flow-step:hover{opacity:.85}
+.flow-step.done .flow-num{background:var(--green)}
+.flow-num{width:40px;height:40px;min-width:40px;background:var(--ink);color:#fff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:500;transition:background .2s}
+.flow-num.alt{background:var(--blue)}
+.flow-step-body h4{font-family:var(--serif);font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--ink);margin-bottom:4px}
+.flow-step-body p{font-size:13px;color:var(--ink3);line-height:1.55}
+.flow-step-body .flow-tag{margin-top:6px}
+.checklist-wrap{position:relative;margin:16px 0}
+.checklist-progress{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.checklist-progress-bar-wrap{flex:1;background:var(--rule);border-radius:2px;height:4px}
+.checklist-progress-bar{height:4px;border-radius:2px;background:var(--green);transition:width .4s ease;width:0%}
+.checklist-progress-label{font-family:var(--mono);font-size:10px;color:var(--ink3);white-space:nowrap}
+.checklist{list-style:none;display:flex;flex-direction:column;gap:5px}
+.checklist li{display:flex;align-items:flex-start;gap:12px;font-size:13.5px;color:var(--ink2);padding:10px 14px;background:var(--bg);border:1px solid var(--rule);border-radius:2px;line-height:1.5;cursor:pointer;user-select:none;transition:background .2s,border-color .2s}
+.checklist li:hover{background:var(--bg3)}
+.checklist li.checked{background:#EBF3EE;border-color:#B8D4BF;color:var(--ink3);text-decoration:line-through}
+.checklist li .check-box{width:18px;height:18px;min-width:18px;border:1.5px solid var(--sand);border-radius:2px;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .2s;flex-shrink:0}
+.checklist li.checked .check-box{background:var(--green);border-color:var(--green)}
+.checklist li .check-box::after{content:'';width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);opacity:0;transition:opacity .2s}
+.checklist li.checked .check-box::after{opacity:1}
+.checklist-reset{background:none;border:1px solid var(--rule);color:var(--ink3);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:2px;cursor:pointer;transition:all .2s}
+.checklist-reset:hover{border-color:var(--sand);color:var(--ink)}
+.risk-filter{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.risk-filter-btn{background:none;border:1px solid var(--rule);color:var(--ink3);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:2px;cursor:pointer;transition:all .2s}
+.risk-filter-btn.active-all{background:var(--ink);color:#fff;border-color:var(--ink)}
+.risk-filter-btn.active-high{background:#FBEBE6;color:var(--red);border-color:var(--red)}
+.risk-filter-btn.active-mid{background:#FBF2E6;color:var(--amber);border-color:var(--amber)}
+.risk-filter-btn.active-low{background:#E6F1EA;color:var(--green);border-color:var(--green)}
+.risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0}
+.risk-item{padding:14px 16px;border-radius:2px;border-left:3px solid;transition:transform .2s}
+.risk-item:hover{transform:translateY(-2px)}
+.risk-item.hidden-risk{display:none}
+.risk-item.high{background:#FBF0ED;border-color:var(--red)}
+.risk-item.mid{background:#FBF5EB;border-color:var(--amber)}
+.risk-item.low{background:#EBF3EE;border-color:var(--green)}
+.risk-item h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.risk-item.high h4{color:var(--red)}
+.risk-item.mid h4{color:var(--amber)}
+.risk-item.low h4{color:var(--green)}
+.risk-item p{font-size:12.5px;color:var(--ink2);line-height:1.5}
+.validate-box{background:#FBF5EB;border:1px solid #E8D5B0;border-left:4px solid var(--amber);padding:18px 22px;margin:16px 0;border-radius:0 2px 2px 0}
+.validate-box h4{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.validate-box ul{list-style:none}
+.validate-box ul li{font-size:13px;color:var(--ink2);padding:5px 0;border-bottom:1px solid #E8D5B0;display:flex;align-items:flex-start;gap:10px}
+.validate-box ul li::before{content:'?';font-weight:700;color:var(--amber);flex-shrink:0}
+.improve-box{background:#EBF3EE;border:1px solid #B8D4BF;border-left:4px solid var(--green);padding:18px 22px;margin:16px 0;border-radius:0 2px 2px 0}
+.improve-box h4{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.improve-box ul{list-style:none}
+.improve-box ul li{font-size:13px;color:var(--ink2);padding:5px 0;border-bottom:1px solid #B8D4BF;display:flex;align-items:flex-start;gap:10px}
+.improve-box ul li::before{content:'↑';font-weight:700;color:var(--green);flex-shrink:0}
+.info-box{background:#E6EDF5;border:1px solid #C5D5E8;border-left:4px solid var(--blue);padding:18px 22px;margin:16px 0;border-radius:0 2px 2px 0}
+.info-box h4{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.autentique-box{background:var(--bg3);border:1px solid var(--sand-light);border-left:4px solid var(--ink);padding:18px 22px;margin:16px 0;border-radius:0 2px 2px 0}
+.autentique-box h4{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);margin-bottom:10px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.04em}
+.status-pill::before{content:'';width:7px;height:7px;border-radius:50%;display:inline-block}
+.status-draft{background:#EFEBE3;color:var(--ink3)}.status-draft::before{background:var(--ink3)}
+.status-pending{background:#FBF2E6;color:var(--amber)}.status-pending::before{background:var(--amber)}
+.status-partial{background:#E6EDF5;color:var(--blue)}.status-partial::before{background:var(--blue)}
+.status-signed{background:#E6F1EA;color:var(--green)}.status-signed::before{background:var(--green)}
+.status-rejected{background:#FBEBE6;color:var(--red)}.status-rejected::before{background:var(--red)}
+.week-grid{display:grid;grid-template-columns:120px 1fr;gap:0;border:1px solid var(--rule);border-radius:2px;overflow:hidden;margin:16px 0}
+.week-day{background:var(--ink);color:var(--sand);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:14px;display:flex;align-items:center}
+.week-content{background:var(--bg);padding:12px 16px;border-bottom:1px solid var(--rule)}
+.week-content p{font-size:13px;color:var(--ink2);line-height:1.6;margin:0}
+.week-content p strong{color:var(--ink)}
+.people-row{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.person-chip{display:flex;flex-direction:column;padding:12px 16px;background:var(--bg);border:1px solid var(--rule);border-radius:2px;min-width:160px;flex:1}
+.person-name{font-size:14px;font-weight:600;color:var(--ink)}
+.person-role{font-size:11px;color:var(--ink3);margin-top:3px}
+.person-contact{font-size:11px;color:var(--blue);margin-top:4px;font-family:var(--mono)}
+h2.sub{font-family:var(--serif);font-size:26px;font-weight:800;text-transform:uppercase;letter-spacing:.01em;color:var(--ink);margin:40px 0 16px;padding-bottom:10px;border-bottom:1px solid var(--rule);line-height:1.1}
+h3.block{font-family:var(--serif);font-size:16px;font-weight:800;color:var(--ink);margin:24px 0 10px;text-transform:uppercase;letter-spacing:.08em}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);margin-bottom:6px}
+.section-title{font-family:var(--serif);font-size:clamp(28px,3.5vw,44px);font-weight:900;text-transform:uppercase;color:var(--ink);line-height:1;letter-spacing:-.01em;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--rule)}
+.section-title span{color:var(--sand)}
+hr.div{margin:32px 0;border:none;border-top:1px solid var(--rule)}
+a.link{color:var(--blue);text-decoration:underline;text-underline-offset:3px;font-size:12px;font-family:var(--mono);word-break:break-all}
+.toast{position:fixed;bottom:24px;left:calc(var(--sidebar) + 50%);transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;z-index:500;opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.calc-box{background:var(--bg3);border:1px solid var(--sand-light);border-radius:2px;padding:18px;margin-top:14px}
+.calc-box-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--sand);margin-bottom:10px}
+.calc-input{width:100%;background:var(--bg);border:1px solid var(--rule);border-radius:2px;padding:9px 12px;font-family:var(--mono);font-size:13px;color:var(--ink);outline:none;margin-bottom:10px;transition:border-color .2s}
+.calc-input:focus{border-color:var(--sand)}
+.calc-btn{background:var(--ink);color:#fff;border:none;padding:10px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;width:100%;transition:opacity .2s}
+.calc-btn:hover{opacity:.85}
+.calc-result{display:none;margin-top:12px;padding:12px;background:var(--bg);border:1px solid var(--rule);border-radius:2px}
+.calc-result-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.calc-result-value{font-family:var(--serif);font-size:22px;font-weight:900;color:var(--ink)}
+.calc-result-sub{font-size:11px;color:var(--ink3);margin-top:3px}
+@media(max-width:860px){#sidebar{width:100%;height:auto;position:relative;flex-direction:row;flex-wrap:wrap}#main{margin-left:0}.tab-panel{padding:24px 20px}.kpi-grid,.grid-2,.grid-3,.grid-4,.risk-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<aside id="sidebar">
+  <div class="sb-brand"><div class="sb-brand-name">SUNA</div><div class="sb-brand-sub">Central Operacional</div></div>
+  <nav class="sb-nav">
+    <div class="sb-nav-label">Visão Geral</div>
+    <div class="sb-link active" onclick="showTab('inicio',this)"><span class="sb-icon">⬡</span> Início</div>
+    <div class="sb-nav-label">Áreas</div>
+    <div class="sb-link" onclick="showTab('juridico',this)"><span class="sb-icon">⚖</span> Jurídico <span class="sb-badge">2</span></div>
+    <div class="sb-link" onclick="showTab('financeiro',this)"><span class="sb-icon">◈</span> Financeiro</div>
+    <div class="sb-link" onclick="showTab('contabil',this)"><span class="sb-icon">▣</span> Contábil <span class="sb-badge amber">!</span></div>
+    <div class="sb-nav-label">Pendências</div>
+    <div class="sb-link" onclick="showTab('validacoes',this)"><span class="sb-icon">✓</span> Validações</div>
+  </nav>
+  <div class="sb-footer">Jun/2026 · v2.0</div>
+</aside>
+<main id="main">
+<div id="tab-inicio" class="tab-panel active">
+  <div class="panel-header"><div class="panel-eyebrow">SUNA Digital Ltda — CNPJ 56.046.214/0001-53</div><h1 class="panel-title">Central <span>Operacional</span></h1></div>
+  <div class="kpi-grid">
+    <div class="kpi-item"><div class="kpi-label">Meta de receita</div><div class="kpi-value">R$100k</div><div class="kpi-sub">Mínimo para margem ≥20%</div></div>
+    <div class="kpi-item"><div class="kpi-label">Margem mínima</div><div class="kpi-value">20%</div><div class="kpi-sub">Alertar sócias se abaixo</div></div>
+    <div class="kpi-item"><div class="kpi-label">Pró-labore total</div><div class="kpi-value">R$22k</div><div class="kpi-sub">Nana R$16k + Suellen R$6k</div></div>
+    <div class="kpi-item"><div class="kpi-label">Custo fixo estimado</div><div class="kpi-value">~R$65k</div><div class="kpi-sub">Referência jun/2026</div></div>
+  </div>
+  <h2 class="sub">Alertas críticos</h2>
+  <div class="alert alert-red"><div class="alert-title">🔴 Jurídico — Contrato de sociedade da Suellen PENDENTE</div><p>Suellen é sócia há ~2 meses sem contrato formal. Ação imediata com David Ortenzi antes da saída da gestão.</p></div>
+  <div class="alert alert-red"><div class="alert-title">🔴 Jurídico — Prestadores sem contrato formal</div><p>Alexandre Oliveira (editor, R$40/vídeo) sem contrato PJ. Alexandre Pereira (ex-gestor) sem registro de rescisão. Risco trabalhista.</p></div>
+  <div class="alert alert-amber"><div class="alert-title">🟡 Contábil — Certificado digital Digisan vence em julho/2026</div><p>Sem renovação, nenhuma nota fiscal pode ser emitida. Custo: R$180. Renovar antes de 20/jul.</p></div>
+  <div class="alert alert-amber"><div class="alert-title">🟡 Financeiro — Sem processo de inadimplência</div><p>Clientes inadimplentes gerenciados ad hoc. Criar fluxo de cobrança estruturado.</p></div>
+  <div class="alert alert-amber"><div class="alert-title">🟡 Jurídico — Demanda Meta/Instagram em andamento</div><p>Advogado David Ortenzi. 2ª parcela R$1.500 vence 21/jun/2026. Acompanhar semanalmente.</p></div>
+  <div class="alert alert-green"><div class="alert-title">🟢 Tati — Aumento de fixo em 10/jul/2026</div><p>Fixo sobe de R$2.500 para R$3.000. Atualizar planilha e pagamento a partir de julho.</p></div>
+  <h2 class="sub">Acesso rápido — áreas</h2>
+  <div class="grid-3">
+    <div class="card" style="cursor:pointer" onclick="showTabById('juridico')"><span class="card-label">Área 01</span><h3>Jurídico</h3><p>Contratos, Autentique, fluxo de assinatura, advogado David Ortenzi, riscos legais.</p><div style="margin-top:12px"><span class="tag tag-red">Contrato Suellen</span><span class="tag tag-amber">Prestadores informais</span></div></div>
+    <div class="card" style="cursor:pointer" onclick="showTabById('financeiro')"><span class="card-label">Área 02</span><h3>Financeiro</h3><p>Fluxo de caixa, calendário de pagamentos, comissões Tati/Larissa/Ariane.</p><div style="margin-top:12px"><span class="tag tag-amber">Inadimplência sem processo</span></div></div>
+    <div class="card" style="cursor:pointer" onclick="showTabById('contabil')"><span class="card-label">Área 03</span><h3>Contábil</h3><p>Notas fiscais (Digisan), Inove/Camilla, Simples Nacional, DAS, INSS.</p><div style="margin-top:12px"><span class="tag tag-red">Certificado vence jul</span></div></div>
+  </div>
+  <h2 class="sub">Calendário do mês</h2>
+  <div class="table-wrap"><table><thead><tr><th>Dia</th><th>Ação</th><th>Valor</th><th>Forma</th></tr></thead><tbody>
+    <tr><td><strong>Dia 1</strong></td><td>Facebook Ads + Ferramentas</td><td>~R$18.000</td><td>Cartão C6</td></tr>
+    <tr><td><strong>Dia 5</strong></td><td>Ariane Roveran (Mentora 02)</td><td>R$2.500 + bônus</td><td>Pix: 47436720821</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Nana Caê — Pró-labore</td><td>R$16.000</td><td>Pix: 01150360160</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Suellen Selleri — Pró-labore</td><td>R$6.000</td><td>Pix: 016.345.626-74</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Marianna Lisboa</td><td>R$1.500</td><td>Pix: 204c7812</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Larissa Negri (Mentora 01)</td><td>R$4.000 + bônus</td><td>Pix</td></tr>
+    <tr><td><strong>Dia 10/16</strong></td><td>Tati (SDR/Closer)</td><td>R$3.000* + bônus</td><td>Pix</td></tr>
+    <tr><td><strong>Dia 15</strong></td><td>Inove (contabilidade)</td><td>R$492,42</td><td>Pix</td></tr>
+    <tr><td><strong>Dia 18–20</strong></td><td>INSS folha — Receita Federal</td><td>R$178,31</td><td>Boleto</td></tr>
+    <tr><td><strong>Dia 22</strong></td><td>Simples Nacional (DAS)</td><td>~R$10.000</td><td>Boleto</td></tr>
+    <tr><td><strong>Dia 25</strong></td><td>LVRG — Consultoria Comercial</td><td>R$4.917,00</td><td>Pix/Boleto</td></tr>
+  </tbody></table></div>
+</div>
+<div id="tab-juridico" class="tab-panel">
+  <div class="panel-header"><div class="panel-eyebrow">02 — Área Jurídica</div><h1 class="panel-title">Playbook <span>Jurídico</span></h1></div>
+  <div class="section-label">01 — Visão Geral da Área</div>
+  <h2 class="section-title">O que esta <span>função</span> cobre</h2>
+  <div class="grid-2">
+    <div class="card-dark"><span class="card-label" style="color:#C9B99A">Papel operacional</span><h3>Escopo desta função</h3><p>Gerar, personalizar e enviar contratos de clientes e prestadores; acompanhar todo o ciclo de assinatura no Autentique até a confirmação; organizar templates e documentos no Drive; ser a ponte operacional com o advogado David Ortenzi para demandas pontuais.</p></div>
+    <div class="card-accent"><span class="card-label">Fora do escopo</span><h3>O que NÃO é desta função</h3><p>Dar parecer jurídico, negociar cláusulas contratuais, redigir novos modelos de contrato do zero, representar a empresa em disputas, ou tomar decisões sobre rescisão sem aprovação das sócias.</p></div>
+  </div>
+  <h2 class="sub">Mapa de produtos e tipos de contrato</h2>
+  <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Tipo de contrato</th><th>Renovação</th><th>Cláusulas específicas</th></tr></thead><tbody>
+    <tr><td><strong>IVE / MPI — Método</strong></td><td>Termos de uso (área de membros)</td><td>—</td><td>Aceite digital na plataforma.</td></tr>
+    <tr><td><strong>IVE / MPI — 1X / 2X</strong></td><td>Contrato personalizado (Autentique)</td><td>Sem renovação automática</td><td>Personalização: dados do cliente, duração, data de início, pagamento.</td></tr>
+    <tr><td><strong>GRD</strong></td><td>Contrato personalizado (Autentique)</td><td><span class="tag tag-amber">Automática</span> — cancelamento com 30 dias</td><td>Cliente precisa manifestar cancelamento por escrito.</td></tr>
+    <tr><td><strong>AD</strong></td><td>Contrato personalizado (Autentique)</td><td>Sem renovação automática</td><td>Cláusula de concorrência desleal + multa de 50% + perdas e danos.</td></tr>
+  </tbody></table></div>
+  <hr class="div">
+  <div class="section-label">02 — Pessoas Envolvidas</div>
+  <h2 class="section-title">Quem está <span>no radar jurídico</span></h2>
+  <div class="people-row">
+    <div class="person-chip"><span class="person-name">David Ortenzi</span><span class="person-role">Advogado — contato fixo</span><span class="person-contact">Pix: 48.178.366/0001-81</span></div>
+    <div class="person-chip"><span class="person-name">Larissa Negri</span><span class="person-role">Mentora 01 — contrato formal</span></div>
+    <div class="person-chip"><span class="person-name">Tati</span><span class="person-role">Closer/SDR — contrato formal</span></div>
+    <div class="person-chip"><span class="person-name">LVRG</span><span class="person-role">Consultoria comercial — contrato formal</span><span class="person-contact">CNPJ: 62.721.913/0001-54</span></div>
+  </div>
+  <div class="people-row">
+    <div class="person-chip" style="border-color:#E8D5B0;background:#FBF5EB"><span class="person-name" style="color:var(--red)">Suellen Selleri</span><span class="person-role" style="color:var(--red)">Sócia — contrato de sociedade PENDENTE</span></div>
+    <div class="person-chip" style="border-color:#E8D5B0;background:#FBF5EB"><span class="person-name" style="color:var(--amber)">Alexandre Oliveira</span><span class="person-role" style="color:var(--amber)">Editor de vídeos — INFORMAL</span><span class="person-contact" style="color:var(--amber)">CNPJ: 55694790000144</span></div>
+    <div class="person-chip" style="border-color:#E8D5B0;background:#FBF5EB"><span class="person-name" style="color:var(--amber)">Alexandre Pereira</span><span class="person-role" style="color:var(--amber)">Ex-gestor — encerrado sem rescisão</span></div>
+    <div class="person-chip"><span class="person-name">Marianna Lisboa</span><span class="person-role">Gestão — execução do fluxo jurídico</span></div>
+  </div>
+  <div class="info-box"><h4>Quando acionar o advogado</h4><p style="font-size:13.5px;color:var(--ink2);line-height:1.6">Acionar David Ortenzi para: (1) novas demandas de notificação ou conflito, (2) revisão de templates antes de mudanças estruturais, (3) qualquer assunto societário — contrato da Suellen, (4) acompanhamento da demanda Meta/Instagram.</p></div>
+  <hr class="div">
+  <div class="section-label">03 — Ferramenta Central</div>
+  <h2 class="section-title">Autentique — <span>como funciona na prática</span></h2>
+  <div class="grid-2">
+    <div class="card"><span class="card-label">Como o cliente recebe o documento</span><h3>Notificação e acesso</h3><p>O Autentique envia automaticamente notificação por e-mail com link de acesso. <strong>O cliente não precisa criar conta</strong> — basta abrir o link e assinar.</p></div>
+    <div class="card"><span class="card-label">Ordem de assinatura</span><h3>Empresa assina primeiro</h3><p>Upload → empresa como 1ª signatária → empresa assina → link enviado ao cliente.</p></div>
+  </div>
+  <h2 class="sub">Status de um documento</h2>
+  <div class="table-wrap"><table><thead><tr><th>Status</th><th>O que significa</th><th>Ação esperada</th></tr></thead><tbody>
+    <tr><td><span class="status-pill status-draft">Rascunho</span></td><td>Criado mas não enviado/configurado.</td><td>Verificar signatários e ordem antes de enviar.</td></tr>
+    <tr><td><span class="status-pill status-pending">Pendente</span></td><td>Enviado, aguardando assinaturas.</td><td>Acompanhar prazo de 3 dias úteis. Reenviar se necessário.</td></tr>
+    <tr><td><span class="status-pill status-partial">Parcialmente assinado</span></td><td>Empresa assinou, falta o cliente.</td><td>Enviar/confirmar link ao cliente via WhatsApp.</td></tr>
+    <tr><td><span class="status-pill status-signed">Assinado</span></td><td>Todas as partes assinaram. Hash SHA256 gerado.</td><td>Baixar PDF, salvar no Drive, atualizar planilha.</td></tr>
+    <tr><td><span class="status-pill status-rejected">Rejeitado</span></td><td>Signatário recusou a assinatura.</td><td>Contatar cliente. Escalar para Nana/Suellen se necessário.</td></tr>
+  </tbody></table></div>
+  <h2 class="sub">Passo a passo dentro do Autentique</h2>
+  <div class="flow" id="flow-autentique">
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">01</div><div class="flow-step-body"><h4>Upload do documento</h4><p>Fazer upload do contrato já personalizado (PDF ou Word) salvo no Drive.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">02</div><div class="flow-step-body"><h4>Definir signatários e ordem</h4><p>Adicionar dois signatários: (1) e-mail da empresa, (2) e-mail do cliente. Empresa primeiro.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">03</div><div class="flow-step-body"><h4>Inserir códigos de assinatura eletrônica</h4><p>Marcar opção para inserir QR/hash no rodapé.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">04</div><div class="flow-step-body"><h4>Enviar para assinatura</h4><p>A empresa assina primeiro pelo e-mail cadastrado.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">05</div><div class="flow-step-body"><h4>Cliente recebe notificação automática</h4><p>Autentique envia link por e-mail (e WhatsApp/SMS, se habilitado).</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">06</div><div class="flow-step-body"><h4>Acompanhar pelo painel</h4><p>Painel mostra status em tempo real.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">07</div><div class="flow-step-body"><h4>Baixar documento assinado</h4><p>Status "assinado" → baixar PDF com página de assinaturas (hash SHA256).</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num alt">08</div><div class="flow-step-body"><h4>Arquivar e salvar no Drive</h4><p>Arquivar no Autentique + salvar em Drive → Contratos → Clientes → [Ano] → [Nome].</p></div></div>
+  </div>
+  <div class="autentique-box"><h4>Por que isso tem validade jurídica</h4><p style="font-size:13.5px;color:var(--ink2);line-height:1.6">O Autentique aplica autenticação eletrônica com cifra SHA256. Validade amparada pela MP 2200-2/2001 e Decreto 10.278/2020.</p></div>
+  <div class="validate-box"><h4>Informações a validar — Autentique</h4><ul><li>Notificação por WhatsApp está habilitada na conta da empresa?</li><li>Existe organização em pastas dentro do Autentique?</li><li>Quantos usuários têm acesso — Suellen já está incluída?</li><li>Algum contrato exige certificado digital ICP-Brasil como camada extra?</li></ul></div>
+  <hr class="div">
+  <div class="section-label">04 — Fluxo Operacional</div>
+  <h2 class="section-title">Do pagamento <span>à assinatura</span></h2>
+  <div class="flow" id="flow-contrato">
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">01</div><div class="flow-step-body"><h4>Confirmar pagamento</h4><p>Verificar na Greenn, extrato Pix ou Principia.</p><div class="flow-tag"><span class="tag tag-blue">Financeiro → Jurídico</span></div></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">02</div><div class="flow-step-body"><h4>Coletar dados do cliente</h4><p>Nome completo, CPF ou CNPJ, endereço, telefone, e-mail.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">03</div><div class="flow-step-body"><h4>Selecionar template correto no Drive</h4><p>Escolher o modelo conforme produto (IVE/MPI 1X/2X, GRD ou AD).</p><div class="flow-tag"><a class="link" href="https://drive.google.com/drive/folders/1cGvbcZTcsWs0nRxyj9yhGVpZ77Qk2QPv" target="_blank">Drive → Contratos → Templates</a></div></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">04</div><div class="flow-step-body"><h4>Personalizar o contrato</h4><p>Preencher: dados do cliente, produto, duração, data de início, valor e pagamento.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">05</div><div class="flow-step-body"><h4>Salvar no Drive</h4><p>Drive → Contratos → Clientes → [Ano] → [Nome do cliente].</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">06</div><div class="flow-step-body"><h4>Subir no Autentique e definir signatários</h4><p>Upload, empresa como 1º signatário e cliente como 2º.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">07</div><div class="flow-step-body"><h4>Assinar pela empresa</h4><p>Status muda para "Parcialmente assinado".</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">08</div><div class="flow-step-body"><h4>Enviar link ao cliente via WhatsApp</h4><p>Autentique já notifica por e-mail — reforçar via WhatsApp. Prazo: 3 dias úteis.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">09</div><div class="flow-step-body"><h4>Acompanhar status até "Assinado"</h4><p>Se passar de 3 dias sem assinatura, reenviar notificação e avisar o comercial.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">10</div><div class="flow-step-body"><h4>Baixar, arquivar e registrar</h4><p>Baixar PDF assinado, salvar no Drive, arquivar no Autentique, atualizar planilha.</p></div></div>
+  </div>
+  <hr class="div">
+  <div class="section-label">05 — Status de Contratos</div>
+  <h2 class="section-title">Onde cada <span>contrato está</span></h2>
+  <div class="table-wrap"><table><thead><tr><th>Parte / Produto</th><th>Tipo</th><th>Status</th><th>Observação</th></tr></thead><tbody>
+    <tr><td><strong>IVE / MPI Método</strong></td><td>Termos de uso</td><td><span class="status-pill status-signed">Não aplicável</span></td><td>Aceite digital na plataforma.</td></tr>
+    <tr><td><strong>IVE / MPI 1X e 2X</strong></td><td>Contrato personalizado</td><td><span class="status-pill status-pending">Fluxo recorrente</span></td><td>Gerado a cada novo cliente.</td></tr>
+    <tr><td><strong>GRD</strong></td><td>Renovação automática</td><td><span class="status-pill status-pending">Fluxo recorrente</span></td><td>Cancelamento com 30 dias de antecedência.</td></tr>
+    <tr><td><strong>AD</strong></td><td>Concorrência/inadimplência</td><td><span class="status-pill status-pending">Fluxo recorrente</span></td><td>Multa 50% + perdas em caso de quebra.</td></tr>
+    <tr><td><strong>Larissa Negri</strong></td><td>Prestação de serviços</td><td><span class="status-pill status-signed">Assinado</span></td><td>—</td></tr>
+    <tr><td><strong>Tati (SDR/Closer)</strong></td><td>Contrato formal</td><td><span class="status-pill status-signed">Assinado</span></td><td>—</td></tr>
+    <tr><td><strong>LVRG</strong></td><td>Contrato 12x R$4.917</td><td><span class="status-pill status-signed">Assinado</span></td><td>Acompanhar parcela atual.</td></tr>
+    <tr style="background:#FBF0ED"><td><strong>Suellen Selleri</strong></td><td>Contrato de sociedade</td><td><span class="status-pill status-draft">Rascunho — não enviado</span></td><td><span class="tag tag-red">URGENTE</span> Formalizar com David Ortenzi.</td></tr>
+    <tr><td><strong>Alexandre Oliveira (editor)</strong></td><td>Informal — R$40/vídeo</td><td><span class="status-pill status-draft">Não iniciado</span></td><td>CNPJ: 55694790000144. Risco trabalhista.</td></tr>
+    <tr><td><strong>Alexandre Pereira (ex-gestor)</strong></td><td>Informal — encerrado</td><td><span class="status-pill status-draft">Sem rescisão</span></td><td>Documentar encerramento por e-mail.</td></tr>
+  </tbody></table></div>
+  <hr class="div">
+  <div class="section-label">06 — Rotina Jurídica</div>
+  <h2 class="section-title">Cadência <span>semanal e mensal</span></h2>
+  <h2 class="sub">Rotina semanal</h2>
+  <div class="week-grid">
+    <div class="week-day">Segunda</div><div class="week-content"><p><strong>Revisar painel Autentique</strong> — documentos pendentes há mais de 3 dias úteis e reenviar notificação.</p></div>
+    <div class="week-day">Terça</div><div class="week-content"><p><strong>Checar novos pagamentos</strong> confirmados (Greenn/Pix/Principia) que ainda não geraram contrato.</p></div>
+    <div class="week-day">Quarta</div><div class="week-content"><p><strong>Atualizar planilha de contratos ativos</strong> com documentos que mudaram para "Assinado".</p></div>
+    <div class="week-day">Quinta</div><div class="week-content"><p><strong>Verificar vencimentos GRD</strong> — alertar Suellen/Nana se houver cancelamento manifestado.</p></div>
+    <div class="week-day">Sexta</div><div class="week-content"><p><strong>Follow-up David Ortenzi</strong> sobre demandas em andamento (caso Meta/Instagram).</p></div>
+  </div>
+  <h2 class="sub">Checklist — novo contrato com cliente</h2>
+  <div class="checklist-wrap">
+    <div class="checklist-progress"><div class="checklist-progress-bar-wrap"><div class="checklist-progress-bar"></div></div><span class="checklist-progress-label">0 / 13</span><button class="checklist-reset" onclick="resetChecklist(this)">↺ Resetar</button></div>
+    <ul class="checklist" data-id="jur-cl">
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Pagamento confirmado (Greenn, Pix ou Principia)</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Dados coletados: nome completo, CPF/CNPJ, endereço, telefone, e-mail</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Template correto selecionado no Drive (IVE/MPI 1X/2X, GRD ou AD)</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Campos personalizados: dados, produto, duração, data início, valor, pagamento</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Documento salvo no Drive: Contratos → Clientes → [Ano] → [Nome]</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Upload no Autentique com os 2 signatários corretos</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Ordem de assinatura definida: empresa primeiro, cliente depois</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Assinatura pela empresa feita — status "Parcialmente assinado"</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Link de assinatura enviado/reforçado ao cliente via WhatsApp</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Status "Assinado" confirmado no painel (prazo: 3 dias úteis)</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>PDF assinado baixado e salvo no Drive</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Documento arquivado no Autentique</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Registro na planilha de contratos ativos atualizado</li>
+    </ul>
+  </div>
+  <hr class="div">
+  <div class="section-label">07 — Demandas Ativas</div>
+  <h2 class="section-title">O que está <span>em andamento</span></h2>
+  <div class="card" style="border-left:4px solid var(--red);margin-bottom:14px"><span class="card-label">Demanda 01 — Com o advogado</span><h3>Derrubada do perfil da Nana Caê no Instagram / Meta</h3><p>Advogado: <strong>David Ortenzi</strong>. R$1.500 pago em mai/2026 + R$1.500 vence 21/jun/2026.</p></div>
+  <div class="card" style="border-left:4px solid var(--red);margin-bottom:14px"><span class="card-label">Demanda 02 — Societária</span><h3>Contrato de sociedade da Suellen Selleri</h3><p>Suellen tornou-se sócia há ~2 meses. Formalizar com David Ortenzi <strong>antes da saída da gestão atual</strong>.</p></div>
+  <div class="card" style="border-left:4px solid var(--amber)"><span class="card-label">Demanda 03 — Formalização de prestadores</span><h3>Editor de vídeos e ex-gestor de tráfego</h3><p>Alexandre Oliveira (R$40/vídeo, CNPJ 55694790000144) informal. Alexandre Pereira encerrou sem rescisão.</p></div>
+  <hr class="div">
+  <div class="section-label">08 — Matriz de Riscos</div>
+  <h2 class="section-title">Onde estão <span>os pontos frágeis</span></h2>
+  <div class="risk-filter">
+    <button class="risk-filter-btn active-all" onclick="filterRisk(this,'all','risk-jur')">Todos</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'high','risk-jur')">🔴 Alto</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'mid','risk-jur')">🟡 Médio</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'low','risk-jur')">🟢 Baixo</button>
+  </div>
+  <div class="risk-grid" id="risk-jur">
+    <div class="risk-item high"><h4>🔴 Risco Alto</h4><p><strong>Contrato de sociedade da Suellen ausente.</strong> Risco jurídico, fiscal e de conflito entre sócias.</p></div>
+    <div class="risk-item high"><h4>🔴 Risco Alto</h4><p><strong>Prestadores informais recorrentes.</strong> Editor e ex-gestor sem contrato — risco de vínculo empregatício.</p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Sem controle centralizado de vencimentos.</strong></p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Reclamações sem documentação.</strong></p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Renovação automática GRD sem monitoramento.</strong></p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Documentos pendentes no Autentique sem follow-up.</strong></p></div>
+    <div class="risk-item low"><h4>🟢 Risco Baixo</h4><p><strong>Direito de imagem.</strong> Contratos preveem autorização automática.</p></div>
+    <div class="risk-item low"><h4>🟢 Risco Baixo</h4><p><strong>Validade das assinaturas.</strong> SHA256 garante rastreabilidade.</p></div>
+  </div>
+  <div class="validate-box" style="margin-top:20px"><h4>Informações a validar — Jurídico</h4><ul><li>Há processo judicial ou notificação formal além da demanda da Meta?</li><li>Existem outros contratos de prestadores não mencionados?</li><li>Onde estão armazenados os contratos já assinados dos alunos ativos hoje?</li><li>Existe política formal de reembolso documentada?</li></ul></div>
+</div>
+<div id="tab-financeiro" class="tab-panel">
+  <div class="panel-header"><div class="panel-eyebrow">03 — Área Financeira</div><h1 class="panel-title">Financeiro</h1></div>
+  <div class="kpi-grid">
+    <div class="kpi-item"><div class="kpi-label">Meta mensal</div><div class="kpi-value">R$100k</div><div class="kpi-sub">Mínimo para margem ≥20%</div></div>
+    <div class="kpi-item"><div class="kpi-label">Margem mínima</div><div class="kpi-value">20%</div><div class="kpi-sub">Alertar sócias abaixo disso</div></div>
+    <div class="kpi-item"><div class="kpi-label">Pró-labore total</div><div class="kpi-value">R$22k</div><div class="kpi-sub">Nana R$16k + Suellen R$6k</div></div>
+    <div class="kpi-item"><div class="kpi-label">Custo fixo</div><div class="kpi-value">~R$65k</div><div class="kpi-sub">Referência jun/2026</div></div>
+  </div>
+  <h2 class="sub">Pessoas e beneficiários recorrentes</h2>
+  <div class="people-row">
+    <div class="person-chip"><span class="person-name">Nana Caê</span><span class="person-role">Pró-labore R$16.000 — dia 10</span><span class="person-contact">Pix: 01150360160</span></div>
+    <div class="person-chip"><span class="person-name">Suellen Selleri</span><span class="person-role">Pró-labore R$6.000 — dia 10</span><span class="person-contact">Pix: 016.345.626-74</span></div>
+    <div class="person-chip"><span class="person-name">Larissa Negri</span><span class="person-role">R$4.000 fixo + bônus renovação</span></div>
+    <div class="person-chip"><span class="person-name">Ariane Roveran</span><span class="person-role">R$2.500 fixo + bônus renovação</span><span class="person-contact">Pix: 47436720821</span></div>
+    <div class="person-chip"><span class="person-name">Tati (SDR)</span><span class="person-role">R$2.500→R$3.000 fixo + bônus</span></div>
+    <div class="person-chip"><span class="person-name">Marianna Lisboa</span><span class="person-role">R$1.500 fixo — dia 10</span><span class="person-contact">Pix: 204c7812</span></div>
+    <div class="person-chip"><span class="person-name">LVRG</span><span class="person-role">R$4.917/mês</span><span class="person-contact">CNPJ: 62.721.913/0001-54</span></div>
+    <div class="person-chip"><span class="person-name">Inove (Camilla)</span><span class="person-role">R$492,42 — dia 15</span></div>
+  </div>
+  <h2 class="sub">Calendário de pagamentos fixos mensais</h2>
+  <div class="table-search"><label>Filtrar:</label><input type="text" placeholder="Ex: dia 10, Pix, boleto..." data-table="table-pag"></div>
+  <div class="table-wrap"><table id="table-pag"><thead><tr><th>Dia</th><th>Beneficiário</th><th>Valor</th><th>Forma</th><th>Observação</th></tr></thead><tbody>
+    <tr><td><strong>Dia 1</strong></td><td>Facebook Ads + Ferramentas</td><td>~R$18.000</td><td>Cartão C6</td><td>Variável conforme uso.</td></tr>
+    <tr><td><strong>Dia 5</strong></td><td>Ariane Roveran (Mentora 02)</td><td>R$2.500 + bônus</td><td>Pix: 47436720821</td><td>Bônus: R$200 GRD / R$100 1X/2X / R$50 Método</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Nana Caê — Pró-labore</td><td>R$16.000</td><td>Pix: 01150360160</td><td>Fundadora</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Suellen Selleri — Pró-labore</td><td>R$6.000</td><td>Pix: 016.345.626-74</td><td>Sócia</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Marianna Lisboa</td><td>R$1.500</td><td>Pix: 204c7812</td><td>—</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Larissa Negri (Mentora 01)</td><td>R$4.000 + bônus</td><td>Pix</td><td>Bônus igual à Ariane</td></tr>
+    <tr><td><strong>Dia 10/16</strong></td><td>Tati (SDR/Closer)</td><td>R$3.000* + bônus</td><td>Pix</td><td>*Sobe para R$3.000 a partir de 10/jul</td></tr>
+    <tr><td><strong>Dia 10</strong></td><td>Alexandre Oliveira (editor)</td><td>R$40/vídeo</td><td>Pix/Asaas</td><td>CNPJ: 55694790000144</td></tr>
+    <tr><td><strong>Dia 15</strong></td><td>Inove — Contabilidade</td><td>R$492,42</td><td>Pix</td><td>—</td></tr>
+    <tr><td><strong>Dia 18–20</strong></td><td>Receita Federal — INSS folha</td><td>R$178,31</td><td>Boleto</td><td>Gerar boleto no portal da Receita</td></tr>
+    <tr><td><strong>Dia 22</strong></td><td>Simples Nacional (DAS)</td><td>~R$10.000</td><td>Boleto</td><td>Varia com faturamento.</td></tr>
+    <tr><td><strong>Dia 25</strong></td><td>LVRG — Consultoria Comercial</td><td>R$4.917,00</td><td>Pix/Boleto</td><td>CNPJ: 62.721.913/0001-54</td></tr>
+  </tbody></table></div>
+  <hr class="div">
+  <h2 class="sub">Regras de comissão variável</h2>
+  <div class="grid-2">
+    <div>
+      <h3 class="block">Tati — SDR / Closer</h3>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Bônus sobre os <strong>recebimentos do mês anterior</strong>.</p>
+      <div class="table-wrap"><table><thead><tr><th>Recebimento mensal</th><th>% bônus</th></tr></thead><tbody>
+        <tr><td>Até R$100.000</td><td><strong>2%</strong></td></tr>
+        <tr><td>R$100.001 a R$150.000</td><td><strong>3%</strong></td></tr>
+        <tr><td>R$150.001 a R$200.000</td><td><strong>4%</strong></td></tr>
+        <tr><td>Acima de R$200.000</td><td><strong>5%</strong></td></tr>
+      </tbody></table></div>
+      <div class="calc-box">
+        <div class="calc-box-label">Calculadora de bônus — Tati</div>
+        <div><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:4px">Recebimento do mês anterior (R$)</label><input type="number" id="calc-receita" class="calc-input" placeholder="Ex: 120000" min="0"></div>
+        <div><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:4px">Valor das novas vendas do mês (R$)</label><input type="number" id="calc-vendas" class="calc-input" placeholder="Ex: 80000" min="0"></div>
+        <button class="calc-btn" onclick="calcTati()">Calcular bônus</button>
+        <div class="calc-result" id="calc-result"><div class="calc-result-label">Resultado</div><div class="calc-result-value" id="calc-result-text"></div><div class="calc-result-sub" id="calc-result-sub"></div></div>
+      </div>
+      <div class="validate-box" style="margin-top:10px"><h4>Atenção</h4><ul><li>Fixo atual R$2.500 → R$3.000 a partir de 10/jul/2026.</li></ul></div>
+    </div>
+    <div>
+      <h3 class="block">Larissa + Ariane — Bônus por renovação</h3>
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Pago no mesmo mês da renovação confirmada.</p>
+      <div class="table-wrap"><table><thead><tr><th>Tipo de renovação</th><th>Bônus</th></tr></thead><tbody>
+        <tr><td>Aluna GRD</td><td><strong>R$200,00</strong></td></tr>
+        <tr><td>Aluna MPI ou IVE Avançado (1X/2X)</td><td><strong>R$100,00</strong></td></tr>
+        <tr><td>Aluna MPI ou IVE Método</td><td><strong>R$50,00</strong></td></tr>
+      </tbody></table></div>
+      <div class="calc-box">
+        <div class="calc-box-label">Calculadora de bônus — Renovações</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+          <div><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:4px">GRD (×R$200)</label><input type="number" id="ren-grd" class="calc-input" min="0" value="0" style="margin:0"></div>
+          <div><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:4px">1X/2X (×R$100)</label><input type="number" id="ren-avancado" class="calc-input" min="0" value="0" style="margin:0"></div>
+          <div><label style="font-size:11px;color:var(--ink3);display:block;margin-bottom:4px">Método (×R$50)</label><input type="number" id="ren-metodo" class="calc-input" min="0" value="0" style="margin:0"></div>
+        </div>
+        <button class="calc-btn" onclick="calcRenovacoes()">Calcular bônus total</button>
+        <div class="calc-result" id="ren-result"><div class="calc-result-label">Bônus por mentora</div><div class="calc-result-value" id="ren-result-text"></div><div class="calc-result-sub" id="ren-result-sub"></div></div>
+      </div>
+    </div>
+  </div>
+  <hr class="div">
+  <h2 class="sub">Checklist mensal — Financeiro</h2>
+  <div class="checklist-wrap">
+    <div class="checklist-progress"><div class="checklist-progress-bar-wrap"><div class="checklist-progress-bar"></div></div><span class="checklist-progress-label">0 / 10</span><button class="checklist-reset" onclick="resetChecklist(this)">↺ Resetar</button></div>
+    <ul class="checklist" data-id="fin-cl">
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Calcular bônus da Tati com base nos recebimentos do mês anterior</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Calcular bônus de renovação de Larissa e Ariane</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Executar todos os pagamentos da equipe no dia 10</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Pagar Inove (contabilidade) dia 15 — R$492,42</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Emitir e pagar INSS (boleto Receita Federal) — dia 18–20</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Emitir e pagar DAS Simples Nacional — dia 22</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Pagar LVRG parcela mensal — dia 25 — R$4.917,00</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Fechar aba do mês: total pago, total recebido, margem real, caixa final</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Verificar se margem real está acima de 20%</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Registrar caixa final como saldo inicial do mês seguinte</li>
+    </ul>
+  </div>
+  <hr class="div">
+  <h2 class="sub">Matriz de riscos — Financeiro</h2>
+  <div class="risk-filter">
+    <button class="risk-filter-btn active-all" onclick="filterRisk(this,'all','risk-fin')">Todos</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'high','risk-fin')">🔴 Alto</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'mid','risk-fin')">🟡 Médio</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'low','risk-fin')">🟢 Baixo</button>
+  </div>
+  <div class="risk-grid" id="risk-fin">
+    <div class="risk-item high"><h4>🔴 Risco Alto</h4><p><strong>Margem negativa recorrente.</strong> Meses de caixa negativo (mar, abr, jun/2026).</p></div>
+    <div class="risk-item high"><h4>🔴 Risco Alto</h4><p><strong>Sem processo de inadimplência.</strong> Clientes sem follow-up estruturado.</p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Limite do cartão C6.</strong> Facebook Ads pode estourar o limite.</p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Planilhas em transição.</strong> Duas versões podem gerar inconsistência.</p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Cálculo de bônus manual.</strong> Risco de erro humano.</p></div>
+    <div class="risk-item low"><h4>🟢 Risco Baixo</h4><p><strong>Principia Pay.</strong> Alto índice de inadimplência — mas a plataforma faz a cobrança.</p></div>
+  </div>
+  <div class="validate-box" style="margin-top:20px"><h4>Informações a validar — Financeiro</h4><ul><li>Qual é o saldo atual exato no Santander e C6?</li><li>Há parcelas de clientes em aberto via Greenn ou Principia?</li><li>A migração das planilhas antigas tem prazo definido?</li><li>Existe separação de % para dividendos vs reserva operacional?</li></ul></div>
+</div>
+<div id="tab-contabil" class="tab-panel">
+  <div class="panel-header"><div class="panel-eyebrow">04 — Área Contábil</div><h1 class="panel-title">Contabilidade</h1></div>
+  <div class="grid-3" style="margin-bottom:24px">
+    <div class="card"><span class="card-label">Contadora principal</span><h3>Camilla — Inove</h3><p>Parceira de confiança da Nana. Canal principal: e-mail. Urgências: WhatsApp.</p></div>
+    <div class="card"><span class="card-label">Notas fiscais</span><h3>Digisan</h3><p>Plataforma de emissão de NF para todos os clientes. Requer certificado digital válido.</p><div style="margin-top:10px"><span class="tag tag-red">Certificado vence jul/2026</span></div></div>
+    <div class="card"><span class="card-label">Regime tributário</span><h3>Simples Nacional</h3><p>ISS variável (~4%). Alíquota informada pela Camilla mensalmente — atualizar no Digisan antes das NFs.</p></div>
+  </div>
+  <h2 class="sub">Fluxo operacional — rotina mensal contábil</h2>
+  <div class="flow" id="flow-cont">
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">01</div><div class="flow-step-body"><h4>Confirmar alíquota ISS com Camilla</h4><p>WhatsApp ou e-mail. Fazer no início do mês, antes de qualquer NF.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">02</div><div class="flow-step-body"><h4>Atualizar ISS no Digisan</h4><p>Digisan → aba Serviços → atualizar percentual ISS em cada tipo: MPI, GRD, IVE e AD.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">03</div><div class="flow-step-body"><h4>Emitir NFs de todos os clientes</h4><p>Gerar nota fiscal para cada cliente que pagou no mês. Prazo: até o último dia do mês.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">04</div><div class="flow-step-body"><h4>Enviar documentos do mês para a Inove</h4><p>Por e-mail: extrato Santander, extrato Greenn, comprovantes de pró-labore e prestadores. Prazo: até dia 5.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">05</div><div class="flow-step-body"><h4>Acompanhar DAS (Simples Nacional)</h4><p>Camilla apura o valor. Emitir boleto no portal do Simples e pagar até dia 22.</p></div></div>
+    <div class="flow-step" onclick="toggleFlowStep(this)"><div class="flow-num">06</div><div class="flow-step-body"><h4>Pagar INSS folha (Receita Federal)</h4><p>Gerar boleto no portal da Receita. Valor fixo: R$178,31. Pagar entre dias 18 e 20.</p></div></div>
+  </div>
+  <h2 class="sub">Checklist mensal — Contabilidade</h2>
+  <div class="checklist-wrap">
+    <div class="checklist-progress"><div class="checklist-progress-bar-wrap"><div class="checklist-progress-bar"></div></div><span class="checklist-progress-label">0 / 9</span><button class="checklist-reset" onclick="resetChecklist(this)">↺ Resetar</button></div>
+    <ul class="checklist" data-id="cont-cl">
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Solicitar alíquota ISS do mês à Camilla (Inove) — até dia 3</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Atualizar ISS no Digisan: MPI, GRD, IVE e AD</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Emitir NFs de todos os clientes que pagaram — até último dia</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Exportar extrato Santander e enviar para Inove — até dia 5</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Exportar extrato Greenn e enviar para Inove — até dia 5</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Enviar comprovantes de pró-labore (Nana + Suellen) para Inove</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Pagar DAS Simples Nacional — até dia 22</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Pagar INSS folha (Receita Federal) — dias 18 a 20</li>
+      <li onclick="toggleCheck(this)"><span class="check-box"></span>Verificar validade do certificado digital Digisan (vence julho/2026)</li>
+    </ul>
+  </div>
+  <hr class="div">
+  <h2 class="sub">Matriz de riscos — Contabilidade</h2>
+  <div class="risk-filter">
+    <button class="risk-filter-btn active-all" onclick="filterRisk(this,'all','risk-con')">Todos</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'high','risk-con')">🔴 Alto</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'mid','risk-con')">🟡 Médio</button>
+    <button class="risk-filter-btn" onclick="filterRisk(this,'low','risk-con')">🟢 Baixo</button>
+  </div>
+  <div class="risk-grid" id="risk-con">
+    <div class="risk-item high"><h4>🔴 Risco Alto</h4><p><strong>Certificado digital Digisan vence em julho.</strong> Custo R$180. Renovar antes de 20/jul.</p></div>
+    <div class="risk-item high"><h4>🔴 Risco Alto</h4><p><strong>ISS não atualizado antes das NFs.</strong> Alíquota errada gera retrabalho e risco fiscal.</p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Documentos não enviados no prazo ao contador.</strong> Atrasa apuração do Simples.</p></div>
+    <div class="risk-item mid"><h4>🟡 Risco Médio</h4><p><strong>Contrato da Suellen sem formalização.</strong> Impacto na contabilidade societária.</p></div>
+    <div class="risk-item low"><h4>🟢 Risco Baixo</h4><p><strong>Prestadores informais sem RPA ou NF.</strong> Pode gerar questões fiscais.</p></div>
+    <div class="risk-item low"><h4>🟢 Risco Baixo</h4><p><strong>Enquadramento no Simples.</strong> Crescimento do faturamento pode elevar faixa.</p></div>
+  </div>
+  <div class="improve-box" style="margin-top:20px"><h4>Oportunidades de melhoria</h4><ul><li>Criar checklist mensal compartilhado com Camilla (Notion ou Google Docs)</li><li>Configurar alerta automático de vencimento do certificado Digisan</li><li>Padronizar envio de documentos em pasta Drive compartilhada com a Inove</li><li>Solicitar à Camilla calendário anual de obrigações acessórias (DEFIS, etc.)</li></ul></div>
+  <div class="validate-box"><h4>Informações a validar — Contabilidade</h4><ul><li>Em qual anexo do Simples Nacional a empresa está enquadrada?</li><li>Há alguma obrigação acessória com prazo próximo?</li><li>O pró-labore de Nana e Suellen está registrado formalmente?</li><li>Existe necessidade de emissão de RPA para o editor Alexandre Oliveira?</li><li>Há histórico de multas ou autuações fiscais anteriores?</li></ul></div>
+</div>
+<div id="tab-validacoes" class="tab-panel">
+  <div class="panel-header"><div class="panel-eyebrow">05 — Consolidado</div><h1 class="panel-title">Próximas <span>validações</span></h1></div>
+  <p style="font-size:14px;color:var(--ink3);margin-bottom:32px;max-width:640px">Todas as informações que precisam ser confirmadas antes de entrarem como definitivas neste workbook. Classificadas por prioridade.</p>
+  <div class="grid-3">
+    <div>
+      <h3 class="block" style="color:var(--red)">🔴 Críticas — antes da saída</h3>
+      <div class="checklist-wrap">
+        <div class="checklist-progress"><div class="checklist-progress-bar-wrap"><div class="checklist-progress-bar"></div></div><span class="checklist-progress-label">0 / 5</span><button class="checklist-reset" onclick="resetChecklist(this)">↺</button></div>
+        <ul class="checklist" data-id="val-criticas">
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Formalizar contrato de sociedade da Suellen com David Ortenzi</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Garantir acesso da Suellen ao Autentique</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Garantir acesso da Suellen ao Digisan</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Adicionar Suellen no grupo WhatsApp da Inove</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Pagar 2ª parcela David Ortenzi (R$1.500 — 21/jun)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3 class="block" style="color:var(--amber)">🟡 Importantes — julho/2026</h3>
+      <div class="checklist-wrap">
+        <div class="checklist-progress"><div class="checklist-progress-bar-wrap"><div class="checklist-progress-bar"></div></div><span class="checklist-progress-label">0 / 5</span><button class="checklist-reset" onclick="resetChecklist(this)">↺</button></div>
+        <ul class="checklist" data-id="val-importantes">
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Renovar certificado digital Digisan (R$180)</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Definir e contratar novo gestor de tráfego com contrato PJ formal</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Formalizar contrato com editor Alexandre Oliveira</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Migrar completamente para novas planilhas financeiras</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Criar dashboard de inadimplência com estratégia de recontato</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3 class="block" style="color:var(--green)">🟢 Melhorias — próximo ciclo</h3>
+      <div class="checklist-wrap">
+        <div class="checklist-progress"><div class="checklist-progress-bar-wrap"><div class="checklist-progress-bar"></div></div><span class="checklist-progress-label">0 / 5</span><button class="checklist-reset" onclick="resetChecklist(this)">↺</button></div>
+        <ul class="checklist" data-id="val-melhorias">
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Criar planilha de alunos ativos com vencimentos de contrato</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Criar dashboard de bônus para a Larissa</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Criar dashboard de comissão para a Tati</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Padronizar envio de documentos ao contador via Drive</li>
+          <li onclick="toggleCheck(this)"><span class="check-box"></span>Solicitar à Camilla calendário anual de obrigações acessórias</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <hr class="div" style="margin:40px 0 28px">
+  <h2 class="sub">Estrutura futura — dashboards</h2>
+  <div class="table-search"><label>Filtrar:</label><input type="text" placeholder="Ex: Tati, Looker, alta..." data-table="table-dash"></div>
+  <div class="table-wrap"><table id="table-dash"><thead><tr><th>Módulo</th><th>O que mostra</th><th>Fonte de dados</th><th>Ferramenta sugerida</th><th>Prioridade</th></tr></thead><tbody>
+    <tr><td><strong>Caixa &amp; Margem</strong></td><td>Receita, custo, margem % e caixa atual</td><td>Google Sheets</td><td>Looker Studio ou Sheets nativo</td><td><span class="tag tag-red">Alta</span></td></tr>
+    <tr><td><strong>Comissão Tati</strong></td><td>Base de cálculo, bônus, histórico</td><td>Planilha SDR Tati</td><td>Sheets com fórmula automática</td><td><span class="tag tag-red">Alta</span></td></tr>
+    <tr><td><strong>Bônus Larissa/Ariane</strong></td><td>Renovações, bônus por mentora</td><td>Controle de renovações</td><td>Notion database ou Sheets</td><td><span class="tag tag-amber">Média</span></td></tr>
+    <tr><td><strong>Inadimplência</strong></td><td>Alunos em atraso, valor, status</td><td>Planilha de recebimentos</td><td>Airtable ou Notion</td><td><span class="tag tag-red">Alta</span></td></tr>
+    <tr><td><strong>Contratos ativos</strong></td><td>Aluno, produto, vencimento, status</td><td>Drive + Autentique</td><td>Notion database ou Sheets</td><td><span class="tag tag-amber">Média</span></td></tr>
+    <tr><td><strong>Painel fiscal</strong></td><td>ISS, DAS, INSS, NFs emitidas</td><td>Digisan + Sheets</td><td>Notion checklist ou Sheets</td><td><span class="tag tag-amber">Média</span></td></tr>
+  </tbody></table></div>
+</div>
+</main>
+<script>
+const STORE='suna-dash-v1';
+function loadState(){try{return JSON.parse(localStorage.getItem(STORE))||{};}catch(e){return {};}}
+function saveState(s){try{localStorage.setItem(STORE,JSON.stringify(s));}catch(e){}}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2000);}
+function showTab(id,el){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));if(el)el.classList.add('active');window.scrollTo(0,0);}
+function showTabById(id){const link=document.querySelector('.sb-link[onclick*="\''+id+"\'"]');showTab(id,link);}
+function toggleCheck(li){li.classList.toggle('checked');updateProgress(li.closest('.checklist'));persistAll();}
+function updateProgress(ul){const wrap=ul.closest('.checklist-wrap');if(!wrap)return;const total=ul.querySelectorAll('li').length;const done=ul.querySelectorAll('li.checked').length;const bar=wrap.querySelector('.checklist-progress-bar');const lbl=wrap.querySelector('.checklist-progress-label');if(bar)bar.style.width=total?(done/total*100)+'%':'0%';if(lbl)lbl.textContent=done+' / '+total;if(done===total&&total>0)showToast('✓ Checklist completo!');}
+function resetChecklist(btn){const wrap=btn.closest('.checklist-wrap');wrap.querySelectorAll('li.checked').forEach(li=>li.classList.remove('checked'));updateProgress(wrap.querySelector('.checklist'));persistAll();showToast('Checklist resetado');}
+function persistAll(){const state=loadState();document.querySelectorAll('.checklist').forEach(ul=>{const id=ul.dataset.id;if(!id)return;state[id]=Array.from(ul.querySelectorAll('li')).map(li=>li.classList.contains('checked'));});saveState(state);}
+function restoreAll(){const state=loadState();document.querySelectorAll('.checklist').forEach(ul=>{const id=ul.dataset.id;if(!id||!state[id])return;ul.querySelectorAll('li').forEach((li,i)=>{if(state[id][i])li.classList.add('checked');});updateProgress(ul);});}
+function toggleFlowStep(step){step.classList.toggle('done');const h4=step.querySelector('h4');showToast(step.classList.contains('done')?(h4?'✓ '+h4.textContent:'Etapa concluída'):'Etapa desmarcada');}
+function filterRisk(btn,level,gridId){const grid=document.getElementById(gridId);btn.closest('.risk-filter').querySelectorAll('.risk-filter-btn').forEach(b=>b.className='risk-filter-btn');if(level==='all'){btn.classList.add('active-all');grid.querySelectorAll('.risk-item').forEach(i=>i.classList.remove('hidden-risk'));}else{btn.classList.add('active-'+level);grid.querySelectorAll('.risk-item').forEach(i=>i.classList.toggle('hidden-risk',!i.classList.contains(level)));}
+}
+document.querySelectorAll('input[data-table]').forEach(input=>{input.addEventListener('input',()=>{const q=input.value.toLowerCase();const t=document.getElementById(input.dataset.table);if(!t)return;t.querySelectorAll('tbody tr').forEach(r=>r.classList.toggle('hidden-row',q&&!r.textContent.toLowerCase().includes(q)));});});
+function calcTati(){const receita=parseFloat(document.getElementById('calc-receita').value)||0;const vendas=parseFloat(document.getElementById('calc-vendas').value)||0;const pct=receita<=100000?0.02:receita<=150000?0.03:receita<=200000?0.04:0.05;const bonus=vendas*pct;const r=document.getElementById('calc-result');r.style.display='block';document.getElementById('calc-result-text').textContent='R$ '+bonus.toLocaleString('pt-BR',{minimumFractionDigits:2});document.getElementById('calc-result-sub').textContent='Base: R$'+receita.toLocaleString('pt-BR')+' → '+(pct*100)+'% sobre R$'+vendas.toLocaleString('pt-BR')+' em vendas';}
+function calcRenovacoes(){const grd=parseInt(document.getElementById('ren-grd').value)||0;const av=parseInt(document.getElementById('ren-avancado').value)||0;const met=parseInt(document.getElementById('ren-metodo').value)||0;const total=grd*200+av*100+met*50;const r=document.getElementById('ren-result');r.style.display='block';document.getElementById('ren-result-text').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2})+' cada';document.getElementById('ren-result-sub').textContent='GRD: '+grd+'×R$200 + Avançado: '+av+'×R$100 + Método: '+met+'×R$50';}
+restoreAll();
+</script>
+</body>
+</html>
